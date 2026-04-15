@@ -1,15 +1,4 @@
-function QuantityControl({ quantity, onAdd, onDecrease }) {
-  if (quantity === 0) {
-    return (
-      <button
-        onClick={onAdd}
-        className="btn border-none bg-[#FF5A1F] text-white hover:bg-[#E14E19]"
-      >
-        Add to cart
-      </button>
-    )
-  }
-
+function CartQuantityControl({ quantity, onAdd, onDecrease }) {
   return (
     <div className="flex items-center gap-3">
       <button
@@ -33,4 +22,4 @@ function QuantityControl({ quantity, onAdd, onDecrease }) {
   )
 }
 
-export default QuantityControl
+export default CartQuantityControl
