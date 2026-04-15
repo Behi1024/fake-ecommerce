@@ -9,29 +9,31 @@ function HomePage() {
   const { cartItems, dispatch } = useOutletContext()
 
   const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
 
-  const categories = [
-    "electronics",
-    "jewelery",
-    "men's clothing",
-    "women's clothing",
-  ]
-
   useEffect(() => {
-    async function fetchProducts() {
+    async function fetchData() {
       try {
-        const response = await fetch("https://fakestoreapi.com/products")
-        const data = await response.json()
-        setProducts(data)
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch("https://fakestoreapi.com/products"),
+          fetch("https://fakestoreapi.com/products/categories"),
+        ])
+
+        const productsData = await productsRes.json()
+        const categoriesData = await categoriesRes.json()
+
+        setProducts(productsData)
+        setCategories(categoriesData)
       } catch (error) {
-        console.error("Could not fetch products:", error)
+        console.error("Error fetching data:", error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchProducts()
+    fetchData()
   }, [])
 
   function getProductQuantity(productId) {
@@ -53,29 +55,34 @@ function HomePage() {
     })
   }
 
+  // ✨ فیلتر محصولات
+  const filteredProducts =
+    selectedCategory === "all"
+      ? products
+      : products.filter((p) => p.category === selectedCategory)
+
   return (
     <main className="mx-auto max-w-[1280px] px-4 py-6 md:px-6 md:py-8">
       <HeroSection />
 
-      <CategoryPills categories={categories} />
+      <CategoryPills
+        categories={["all", ...categories]}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
 
       <section className="mt-10">
-        <div className="mb-6 flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-bold text-[#1F172A]">
-              Featured products
-            </h2>
-            <p className="mt-2 text-[#6B7280]">
-              Clean, playful and premium catalog layout
-            </p>
-          </div>
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-[#1F172A]">
+            Featured products
+          </h2>
         </div>
 
         {isLoading ? (
-          <p className="text-lg text-[#6B7280]">Loading products...</p>
+          <p>Loading...</p>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
