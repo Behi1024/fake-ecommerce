@@ -1,12 +1,15 @@
+import { useEffect, useState } from "react"
 import { useOutletContext } from "react-router-dom"
 import HeroSection from "../components/HeroSection"
 import CategoryPills from "../components/CategoryPills"
 import ProductCard from "../components/ProductCard"
-import mockProducts from "../data/mockProducts"
 import { CART_ACTIONS } from "../reducers/cartReducer"
 
 function HomePage() {
   const { cartItems, dispatch } = useOutletContext()
+
+  const [products, setProducts] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
   const categories = [
     "electronics",
@@ -14,6 +17,22 @@ function HomePage() {
     "men's clothing",
     "women's clothing",
   ]
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const response = await fetch("https://fakestoreapi.com/products")
+        const data = await response.json()
+        setProducts(data)
+      } catch (error) {
+        console.error("Could not fetch products:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
 
   function getProductQuantity(productId) {
     const cartItem = cartItems.find((item) => item.id === productId)
@@ -52,17 +71,21 @@ function HomePage() {
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {mockProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              quantity={getProductQuantity(product.id)}
-              onAdd={() => handleAddToCart(product)}
-              onDecrease={() => handleDecreaseFromCart(product.id)}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <p className="text-lg text-[#6B7280]">Loading products...</p>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                quantity={getProductQuantity(product.id)}
+                onAdd={() => handleAddToCart(product)}
+                onDecrease={() => handleDecreaseFromCart(product.id)}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </main>
   )
